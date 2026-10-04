@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0e0e12">
+<title>Xtra Web</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0e0e12;color:#f5f5f7}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:linear-gradient(180deg,#18151f 0,#0e0e12 220px);color:#f5f5f7}button,input{font:inherit}button{cursor:pointer}.app{max-width:1500px;margin:auto;padding:18px}.top{display:flex;gap:14px;align-items:center;margin-bottom:18px}.logo{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:#a970ff;color:#0e0e12;font-size:28px;font-weight:900}.brand{flex:1}.brand h1{font-size:24px;margin:0}.brand p{margin:2px 0 0;color:#aaa5b5;font-size:13px}.pill{border:1px solid #34303e;background:#1a1820;color:#ddd8e7;border-radius:999px;padding:9px 13px}.search{display:grid;grid-template-columns:1fr auto;gap:10px;background:#17151c;border:1px solid #2d2935;border-radius:18px;padding:10px;margin-bottom:18px;box-shadow:0 12px 36px rgba(0,0,0,.25)}.search input{min-width:0;border:0;outline:0;background:transparent;color:white;padding:11px 12px;font-size:16px}.primary{border:0;border-radius:12px;background:#a970ff;color:#100c16;font-weight:800;padding:11px 18px}.layout{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:14px}.video,.chat,.panel{background:#15131a;border:1px solid #292630;border-radius:18px;overflow:hidden}.video{aspect-ratio:16/9;min-height:260px}.video iframe,.chat iframe{width:100%;height:100%;border:0;display:block}.chat{height:min(70vh,760px)}.empty{display:grid;place-items:center;text-align:center;height:100%;min-height:380px;padding:34px}.empty .x{font-size:66px;font-weight:900;color:#a970ff}.empty h2{margin:8px 0 6px;font-size:25px}.empty p{max-width:520px;color:#aaa5b5;line-height:1.5}.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:14px}.channel-title{font-weight:800;font-size:18px;margin-right:auto}.secondary,.danger{border:1px solid #35313e;background:#1b1821;color:#eee;border-radius:11px;padding:10px 13px}.danger{color:#ffb4b4}.saved{margin-top:20px}.saved h2{font-size:17px;margin:0 0 10px}.chips{display:flex;gap:9px;flex-wrap:wrap}.chip{border:1px solid #34303e;background:#19171e;color:#e9e6ef;border-radius:999px;padding:9px 13px}.hint{margin-top:18px;padding:14px 16px;background:#15131a;border:1px solid #292630;border-radius:14px;color:#aaa5b5;font-size:13px;line-height:1.5}.hint strong{color:#eee}.hidden{display:none!important}@media(max-width:900px){.app{padding:12px}.layout{grid-template-columns:1fr}.chat{height:520px}.brand p{display:none}}@media(max-width:520px){.top{gap:10px}.logo{width:42px;height:42px;border-radius:12px}.brand h1{font-size:21px}.pill{display:none}.search{grid-template-columns:1fr}.primary{width:100%}.video{border-radius:14px;min-height:210px}.chat{height:460px;border-radius:14px}.bar{align-items:stretch}.channel-title{width:100%}.secondary,.danger{flex:1}.empty{min-height:300px;padding:24px}}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="top">
+    <div class="logo">X</div>
+    <div class="brand"><h1>Xtra Web</h1><p>A simple tablet-friendly Twitch player inspired by Xtra.</p></div>
+    <button class="pill" id="homeBtn" type="button">Home</button>
+  </header>
+
+  <form class="search" id="channelForm" autocomplete="off">
+    <input id="channelInput" aria-label="Twitch channel" placeholder="Type a Twitch channel name, e.g. twitchdev" autocapitalize="none" spellcheck="false">
+    <button class="primary" type="submit">Watch</button>
+  </form>
+
+  <section id="welcome" class="panel empty">
+    <div>
+      <div class="x">X</div>
+      <h2>Open a Twitch channel</h2>
+      <p>Type the channel name above and tap <strong>Watch</strong>. The stream and Twitch chat will open together. Saved channels stay on this tablet.</p>
+    </div>
+  </section>
+
+  <section id="playerArea" class="hidden">
+    <div class="layout">
+      <div class="video"><iframe id="player" allowfullscreen allow="autoplay; fullscreen" title="Twitch stream"></iframe></div>
+      <div class="chat"><iframe id="chat" title="Twitch chat"></iframe></div>
+    </div>
+    <div class="bar">
+      <div class="channel-title" id="channelTitle"></div>
+      <button class="secondary" id="saveBtn" type="button">☆ Save channel</button>
+      <button class="secondary" id="twitchBtn" type="button">Open on Twitch ↗</button>
+      <button class="danger" id="closeBtn" type="button">Close</button>
+    </div>
+  </section>
+
+  <section class="saved" id="savedSection">
+    <h2>Saved channels</h2>
+    <div class="chips" id="savedList"></div>
+  </section>
+
+  <div class="hint"><strong>Tip:</strong> after this is published, you can add the page to your Android tablet’s home screen from your browser menu. This web version uses Twitch’s official video and chat embeds; it does not need your Twitch password or a developer key.</div>
+</main>
+<script>
+(() => {
+  const form = document.getElementById('channelForm');
+  const input = document.getElementById('channelInput');
+  const welcome = document.getElementById('welcome');
+  const playerArea = document.getElementById('playerArea');
+  const player = document.getElementById('player');
+  const chat = document.getElementById('chat');
+  const title = document.getElementById('channelTitle');
+  const saveBtn = document.getElementById('saveBtn');
+  const savedList = document.getElementById('savedList');
+  let current = '';
+  let saved = readSaved();
+
+  function clean(value) {
+    return String(value || '').trim().replace(/^https?:\/\/(www\.)?twitch\.tv\//i, '').split(/[\/?#]/)[0].replace(/^@/, '').toLowerCase();
+  }
+  function valid(name) { return /^[a-z0-9_]{1,30}$/i.test(name); }
+  function readSaved() {
+    try { return JSON.parse(localStorage.getItem('xtra.saved') || '[]'); } catch { return []; }
+  }
+  function storeSaved() { localStorage.setItem('xtra.saved', JSON.stringify(saved)); }
+  function urlFor(name) {
+    const url = new URL(location.href); url.search = ''; url.hash = '';
+    if (name) url.searchParams.set('channel', name);
+    return url;
+  }
+  function renderSaved() {
+    savedList.innerHTML = '';
+    if (!saved.length) {
+      const span = document.createElement('span'); span.style.color = '#77717f'; span.textContent = 'No saved channels yet.'; savedList.appendChild(span); return;
+    }
+    saved.forEach(name => {
+      const button = document.createElement('button'); button.className = 'chip'; button.type = 'button'; button.textContent = name; button.addEventListener('click', () => openChannel(name)); savedList.appendChild(button);
+    });
+  }
+  function openChannel(raw, push = true) {
+    const name = clean(raw);
+    if (!valid(name)) { input.focus(); input.setCustomValidity('Enter a valid Twitch channel name.'); input.reportValidity(); setTimeout(() => input.setCustomValidity(''), 1500); return; }
+    current = name;
+    const parent = location.hostname;
+    if (!parent) { alert('This page needs to be opened from its website link, not as a downloaded file.'); return; }
+    player.src = `https://player.twitch.tv/?channel=${encodeURIComponent(name)}&parent=${encodeURIComponent(parent)}&autoplay=true`;
+    chat.src = `https://www.twitch.tv/embed/${encodeURIComponent(name)}/chat?parent=${encodeURIComponent(parent)}&darkpopout`;
+    title.textContent = name;
+    input.value = name;
+    welcome.classList.add('hidden');
+    playerArea.classList.remove('hidden');
+    saveBtn.textContent = saved.includes(name) ? '★ Saved' : '☆ Save channel';
+    document.title = `${name} · Xtra Web`;
+    if (push) history.pushState({}, '', urlFor(name));
+  }
+  function closePlayer(push = true) {
+    current = ''; player.src = 'about:blank'; chat.src = 'about:blank'; input.value = ''; document.title = 'Xtra Web';
+    playerArea.classList.add('hidden'); welcome.classList.remove('hidden');
+    if (push) history.pushState({}, '', urlFor(''));
+  }
+  form.addEventListener('submit', e => { e.preventDefault(); openChannel(input.value); });
+  saveBtn.addEventListener('click', () => {
+    if (!current) return;
+    saved = saved.includes(current) ? saved.filter(x => x !== current) : [current, ...saved.filter(x => x !== current)];
+    storeSaved(); renderSaved(); saveBtn.textContent = saved.includes(current) ? '★ Saved' : '☆ Save channel';
+  });
+  document.getElementById('twitchBtn').addEventListener('click', () => { if (current) window.open(`https://www.twitch.tv/${encodeURIComponent(current)}`, '_blank', 'noopener'); });
+  document.getElementById('closeBtn').addEventListener('click', () => closePlayer());
+  document.getElementById('homeBtn').addEventListener('click', () => closePlayer());
+  window.addEventListener('popstate', () => {
+    const name = clean(new URL(location.href).searchParams.get('channel'));
+    if (name) openChannel(name, false); else closePlayer(false);
+  });
+  renderSaved();
+  const initial = clean(new URL(location.href).searchParams.get('channel'));
+  if (initial) openChannel(initial, false);
+})();
+</script>
+</body>
+</html>
